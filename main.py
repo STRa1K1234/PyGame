@@ -9,8 +9,11 @@ check_list = []
 def normalize_city_name(name):
     return name.strip().lower().replace('ё', 'е')
 
+
 cache = set()
 cities = {normalize_city_name(x) for x in open("cities.txt", encoding="utf-8").readlines() if x.strip()}
+score = 0
+
 
 def find_city(last_letter):
     for city in cities:
@@ -18,11 +21,13 @@ def find_city(last_letter):
             return city
     return None
 
+
 def get_last_letter(city):
     if city[-1].lower() in ["ъ", "ь", "й", "ц", "ы"]:
         return city[-2].lower()
     else:
         return city[-1].lower()
+
 
 pygame.init()
 
@@ -72,7 +77,9 @@ while start_screen:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 start_screen = False
-                last_letter = computer_text[-1].lower() if computer_text[-1].lower() not in ["ъ", "ь", "й", "ц", "ы"] else computer_text[-2].lower()
+                last_letter = computer_text[-1].lower() if computer_text[-1].lower() not in ["ъ", "ь", "й", "ц",
+                                                                                             "ы"] else computer_text[
+                    -2].lower()
             elif event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
@@ -95,12 +102,15 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:  # Пользователь нажал "Enter"
+            if event.key == pygame.K_ESCAPE:
+                running = False
+            elif event.key == pygame.K_RETURN:  # Пользователь нажал "Enter"
                 user_city = input_text.lower()
                 if user_city and user_city[0] == computer_text[
                     -1] and user_city in cities and user_city not in used_cities:
                     used_cities.append(user_city)
                     computer_text = get_next_city(user_city[-1])
+                    score += 1
                     if computer_text is None:
                         print("Компьютер не смог найти город. Вы выиграли!")
                         running = False
@@ -135,11 +145,18 @@ while running:
     chosen_city_rect = chosen_city_text.get_rect(center=(WINDOW_SIZE[0] // 2, (WINDOW_SIZE[1] // 2 - 150)))
     screen.blit(chosen_city_text, chosen_city_rect)
 
+    score_text = font.render("Score: " + str(score), True, WHITE)
+    score_text_rect = score_text.get_rect(topleft=(20, 20))
+    screen.blit(score_text, score_text_rect)
+
+    if not running:
+        screen.fill(BLACK)
+        game_over_text = font.render("Game Over", True, WHITE)
+        game_over_rect = game_over_text.get_rect(center=(WINDOW_SIZE[0] // 2, WINDOW_SIZE[1] // 2))
+        screen.blit(game_over_text, game_over_rect)
+
     pygame.display.flip()
 
 # Выход из Pygame
 pygame.quit()
 sys.exit()
-
-
-# TODO несуществующие букву в конце слов заменить на предпоследнюю
